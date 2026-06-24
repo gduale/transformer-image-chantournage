@@ -27,7 +27,7 @@ class StencilForm(forms.Form):
 
         content_type = getattr(image, "content_type", "")
         if content_type not in ALLOWED_CONTENT_TYPES:
-            raise forms.ValidationError("Formats acceptés : JPEG, PNG ou WebP.")
+            raise forms.ValidationError("Formats acceptés : JPG, JPEG, PNG ou WebP.")
 
         return image
 

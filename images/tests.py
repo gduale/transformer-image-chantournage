@@ -19,6 +19,13 @@ def create_test_image(size=(120, 80), color=(220, 220, 220)):
     return buffer.getvalue()
 
 
+def create_jpeg_test_image(size=(120, 80), color=(220, 220, 220)):
+    image = Image.new("RGB", size, color)
+    buffer = BytesIO()
+    image.save(buffer, format="JPEG")
+    return buffer.getvalue()
+
+
 class StencilServiceTests(TestCase):
     def test_make_stencil_returns_png_images(self):
         image_bytes = create_test_image()
@@ -56,6 +63,29 @@ class TransformImageViewTests(TestCase):
             "test.png",
             create_test_image(),
             content_type="image/png",
+        )
+
+        response = self.client.post(
+            reverse("images:transform"),
+            {
+                "image": upload,
+                "brightness": 0,
+                "contrast": 25,
+                "threshold": 130,
+                "detail": 45,
+                "denoise": 20,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Télécharger")
+        self.assertContains(response, "data:image/png;base64")
+
+    def test_post_jpg_image_displays_result(self):
+        upload = SimpleUploadedFile(
+            "test.jpg",
+            create_jpeg_test_image(),
+            content_type="image/jpeg",
         )
 
         response = self.client.post(
