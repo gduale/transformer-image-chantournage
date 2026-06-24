@@ -1,0 +1,2 @@
+# No runtime dependencies are required for the specification-only state.
+# Add Django, Tailwind integration, Pillow, OpenCV, and related packages when implementation starts.
