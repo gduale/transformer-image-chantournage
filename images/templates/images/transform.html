@@ -89,41 +89,41 @@
             <label class="block">
               <span class="flex justify-between text-sm font-semibold text-zinc-800">
                 Luminosité
-                <span data-control-output="brightness">{{ form.brightness.value|default:0 }}</span>
+                <span id="brightnessValue">{{ form.brightness.value|default:0 }}</span>
               </span>
-              <input type="range" name="brightness" min="-100" max="100" value="{{ form.brightness.value|default:0 }}" data-default-value="0" class="mt-2 w-full accent-emerald-700" data-parameter-control>
+              <input type="range" name="brightness" min="-100" max="100" value="{{ form.brightness.value|default:0 }}" data-default-value="0" data-output-target="brightnessValue" class="mt-2 w-full accent-emerald-700" data-parameter-control>
             </label>
 
             <label class="block">
               <span class="flex justify-between text-sm font-semibold text-zinc-800">
                 Contraste
-                <span data-control-output="contrast">{{ form.contrast.value|default:25 }}</span>
+                <span id="contrastValue">{{ form.contrast.value|default:25 }}</span>
               </span>
-              <input type="range" name="contrast" min="-100" max="100" value="{{ form.contrast.value|default:25 }}" data-default-value="25" class="mt-2 w-full accent-emerald-700" data-parameter-control>
+              <input type="range" name="contrast" min="-100" max="100" value="{{ form.contrast.value|default:25 }}" data-default-value="25" data-output-target="contrastValue" class="mt-2 w-full accent-emerald-700" data-parameter-control>
             </label>
 
             <label class="block">
               <span class="flex justify-between text-sm font-semibold text-zinc-800">
                 Seuil
-                <span data-control-output="threshold">{{ form.threshold.value|default:130 }}</span>
+                <span id="thresholdValue">{{ form.threshold.value|default:130 }}</span>
               </span>
-              <input type="range" name="threshold" min="0" max="255" value="{{ form.threshold.value|default:130 }}" data-default-value="130" class="mt-2 w-full accent-emerald-700" data-parameter-control>
+              <input type="range" name="threshold" min="0" max="255" value="{{ form.threshold.value|default:130 }}" data-default-value="130" data-output-target="thresholdValue" class="mt-2 w-full accent-emerald-700" data-parameter-control>
             </label>
 
             <label class="block">
               <span class="flex justify-between text-sm font-semibold text-zinc-800">
                 Détail
-                <span data-control-output="detail">{{ form.detail.value|default:45 }}</span>
+                <span id="detailValue">{{ form.detail.value|default:45 }}</span>
               </span>
-              <input type="range" name="detail" min="0" max="100" value="{{ form.detail.value|default:45 }}" data-default-value="45" class="mt-2 w-full accent-emerald-700" data-parameter-control>
+              <input type="range" name="detail" min="0" max="100" value="{{ form.detail.value|default:45 }}" data-default-value="45" data-output-target="detailValue" class="mt-2 w-full accent-emerald-700" data-parameter-control>
             </label>
 
             <label class="block">
               <span class="flex justify-between text-sm font-semibold text-zinc-800">
                 Nettoyage
-                <span data-control-output="denoise">{{ form.denoise.value|default:20 }}</span>
+                <span id="denoiseValue">{{ form.denoise.value|default:20 }}</span>
               </span>
-              <input type="range" name="denoise" min="0" max="100" value="{{ form.denoise.value|default:20 }}" data-default-value="20" class="mt-2 w-full accent-emerald-700" data-parameter-control>
+              <input type="range" name="denoise" min="0" max="100" value="{{ form.denoise.value|default:20 }}" data-default-value="20" data-output-target="denoiseValue" class="mt-2 w-full accent-emerald-700" data-parameter-control>
             </label>
 
             <label class="flex items-center justify-between gap-3 rounded-md border border-zinc-200 px-3 py-2">
@@ -174,15 +174,21 @@
           return;
         }
 
-        const output = document.querySelector(`[data-control-output="${control.name}"]`);
+        const output = document.getElementById(control.dataset.outputTarget);
         if (output) {
           output.textContent = control.value;
         }
       };
 
-      parameterControls.forEach((control) => {
-        control.addEventListener("input", () => updateControlOutput(control));
-      });
+      const syncParameterOutput = (event) => {
+        const control = event.target.closest("[data-parameter-control]");
+        if (control) {
+          updateControlOutput(control);
+        }
+      };
+
+      document.addEventListener("input", syncParameterOutput);
+      document.addEventListener("change", syncParameterOutput);
 
       resetParameters.addEventListener("click", () => {
         parameterControls.forEach((control) => {
