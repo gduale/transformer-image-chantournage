@@ -89,46 +89,46 @@
             <label class="block">
               <span class="flex justify-between text-sm font-semibold text-zinc-800">
                 Luminosité
-                <span>{{ form.brightness.value|default:0 }}</span>
+                <span data-control-output="brightness">{{ form.brightness.value|default:0 }}</span>
               </span>
-              <input type="range" name="brightness" min="-100" max="100" value="{{ form.brightness.value|default:0 }}" class="mt-2 w-full accent-emerald-700">
+              <input type="range" name="brightness" min="-100" max="100" value="{{ form.brightness.value|default:0 }}" data-default-value="0" class="mt-2 w-full accent-emerald-700" data-parameter-control>
             </label>
 
             <label class="block">
               <span class="flex justify-between text-sm font-semibold text-zinc-800">
                 Contraste
-                <span>{{ form.contrast.value|default:25 }}</span>
+                <span data-control-output="contrast">{{ form.contrast.value|default:25 }}</span>
               </span>
-              <input type="range" name="contrast" min="-100" max="100" value="{{ form.contrast.value|default:25 }}" class="mt-2 w-full accent-emerald-700">
+              <input type="range" name="contrast" min="-100" max="100" value="{{ form.contrast.value|default:25 }}" data-default-value="25" class="mt-2 w-full accent-emerald-700" data-parameter-control>
             </label>
 
             <label class="block">
               <span class="flex justify-between text-sm font-semibold text-zinc-800">
                 Seuil
-                <span>{{ form.threshold.value|default:130 }}</span>
+                <span data-control-output="threshold">{{ form.threshold.value|default:130 }}</span>
               </span>
-              <input type="range" name="threshold" min="0" max="255" value="{{ form.threshold.value|default:130 }}" class="mt-2 w-full accent-emerald-700">
+              <input type="range" name="threshold" min="0" max="255" value="{{ form.threshold.value|default:130 }}" data-default-value="130" class="mt-2 w-full accent-emerald-700" data-parameter-control>
             </label>
 
             <label class="block">
               <span class="flex justify-between text-sm font-semibold text-zinc-800">
                 Détail
-                <span>{{ form.detail.value|default:45 }}</span>
+                <span data-control-output="detail">{{ form.detail.value|default:45 }}</span>
               </span>
-              <input type="range" name="detail" min="0" max="100" value="{{ form.detail.value|default:45 }}" class="mt-2 w-full accent-emerald-700">
+              <input type="range" name="detail" min="0" max="100" value="{{ form.detail.value|default:45 }}" data-default-value="45" class="mt-2 w-full accent-emerald-700" data-parameter-control>
             </label>
 
             <label class="block">
               <span class="flex justify-between text-sm font-semibold text-zinc-800">
                 Nettoyage
-                <span>{{ form.denoise.value|default:20 }}</span>
+                <span data-control-output="denoise">{{ form.denoise.value|default:20 }}</span>
               </span>
-              <input type="range" name="denoise" min="0" max="100" value="{{ form.denoise.value|default:20 }}" class="mt-2 w-full accent-emerald-700">
+              <input type="range" name="denoise" min="0" max="100" value="{{ form.denoise.value|default:20 }}" data-default-value="20" class="mt-2 w-full accent-emerald-700" data-parameter-control>
             </label>
 
             <label class="flex items-center justify-between gap-3 rounded-md border border-zinc-200 px-3 py-2">
               <span class="text-sm font-semibold text-zinc-800">Inverser</span>
-              <input type="checkbox" name="invert" value="on" {% if form.invert.value %}checked{% endif %} class="h-5 w-5 rounded border-zinc-300 text-emerald-700 focus:ring-emerald-700">
+              <input type="checkbox" name="invert" value="on" data-default-checked="false" {% if form.invert.value %}checked{% endif %} class="h-5 w-5 rounded border-zinc-300 text-emerald-700 focus:ring-emerald-700" data-parameter-control>
             </label>
           </div>
 
@@ -145,12 +145,13 @@
             >
               Transformer
             </button>
-            <a
-              href="{% url 'images:transform' %}"
+            <button
+              type="button"
+              id="resetParameters"
               class="inline-flex h-11 items-center justify-center rounded-md border border-zinc-300 px-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-100"
             >
               Réinitialiser
-            </a>
+            </button>
           </div>
         </aside>
       </form>
@@ -163,8 +164,36 @@
       const originalMeta = document.getElementById("originalMeta");
       const stencilPreview = document.getElementById("stencilPreview");
       const stencilPlaceholder = document.getElementById("stencilPlaceholder");
+      const resetParameters = document.getElementById("resetParameters");
+      const parameterControls = document.querySelectorAll("[data-parameter-control]");
 
       let currentPreviewUrl = null;
+
+      const updateControlOutput = (control) => {
+        if (control.type === "checkbox") {
+          return;
+        }
+
+        const output = document.querySelector(`[data-control-output="${control.name}"]`);
+        if (output) {
+          output.textContent = control.value;
+        }
+      };
+
+      parameterControls.forEach((control) => {
+        control.addEventListener("input", () => updateControlOutput(control));
+      });
+
+      resetParameters.addEventListener("click", () => {
+        parameterControls.forEach((control) => {
+          if (control.type === "checkbox") {
+            control.checked = control.dataset.defaultChecked === "true";
+          } else {
+            control.value = control.dataset.defaultValue;
+            updateControlOutput(control);
+          }
+        });
+      });
 
       imageInput.addEventListener("change", () => {
         const file = imageInput.files[0];
