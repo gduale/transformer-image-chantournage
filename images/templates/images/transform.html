@@ -32,21 +32,21 @@
           <div class="flex min-h-[320px] flex-col overflow-hidden rounded-md border border-zinc-300 bg-white">
             <div class="flex h-12 items-center justify-between border-b border-zinc-200 px-4">
               <h2 class="text-sm font-semibold text-zinc-800">Original</h2>
-              {% if result %}
-                <span class="text-xs text-zinc-500">{{ result.width }} x {{ result.height }}</span>
-              {% endif %}
+              <span id="originalMeta" class="text-xs text-zinc-500">{% if result %}{{ result.width }} x {{ result.height }}{% endif %}</span>
             </div>
             <div class="flex flex-1 items-center justify-center bg-zinc-50 p-3">
-              {% if result %}
-                <img src="{{ result.original_data_url }}" alt="Image originale" class="max-h-[70vh] w-full object-contain">
-              {% else %}
-                <div class="w-full max-w-sm">
-                  <label for="{{ form.image.id_for_label }}" class="flex aspect-[4/3] cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-zinc-300 bg-white p-6 text-center hover:border-emerald-600">
-                    <span class="text-base font-semibold text-zinc-900">Ajouter une image</span>
-                    <span class="mt-2 text-sm text-zinc-500">JPEG, PNG ou WebP</span>
-                  </label>
-                </div>
-              {% endif %}
+              <img
+                id="originalPreview"
+                src="{% if result %}{{ result.original_data_url }}{% endif %}"
+                alt="Image originale"
+                class="{% if not result %}hidden {% endif %}max-h-[70vh] w-full object-contain"
+              >
+              <div id="originalPlaceholder" class="{% if result %}hidden {% endif %}w-full max-w-sm">
+                <label for="{{ form.image.id_for_label }}" class="flex aspect-[4/3] cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-zinc-300 bg-white p-6 text-center hover:border-emerald-600">
+                  <span class="text-base font-semibold text-zinc-900">Ajouter une image</span>
+                  <span class="mt-2 text-sm text-zinc-500">JPEG, PNG ou WebP</span>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -57,9 +57,12 @@
             </div>
             <div class="flex flex-1 items-center justify-center bg-white p-3">
               {% if result %}
-                <img src="{{ result.stencil_data_url }}" alt="Rendu stencil" class="max-h-[70vh] w-full object-contain [image-rendering:auto]">
+                <img id="stencilPreview" src="{{ result.stencil_data_url }}" alt="Rendu stencil" class="max-h-[70vh] w-full object-contain [image-rendering:auto]">
+                <div id="stencilPlaceholder" class="hidden aspect-[4/3] w-full max-w-sm items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 text-center text-sm font-medium text-zinc-500">
+                  En attente de transformation
+                </div>
               {% else %}
-                <div class="flex aspect-[4/3] w-full max-w-sm items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 text-sm font-medium text-zinc-500">
+                <div id="stencilPlaceholder" class="flex aspect-[4/3] w-full max-w-sm items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 text-center text-sm font-medium text-zinc-500">
                   En attente
                 </div>
               {% endif %}
@@ -152,5 +155,43 @@
         </aside>
       </form>
     </main>
+
+    <script>
+      const imageInput = document.getElementById("{{ form.image.id_for_label }}");
+      const originalPreview = document.getElementById("originalPreview");
+      const originalPlaceholder = document.getElementById("originalPlaceholder");
+      const originalMeta = document.getElementById("originalMeta");
+      const stencilPreview = document.getElementById("stencilPreview");
+      const stencilPlaceholder = document.getElementById("stencilPlaceholder");
+
+      let currentPreviewUrl = null;
+
+      imageInput.addEventListener("change", () => {
+        const file = imageInput.files[0];
+        if (!file) {
+          return;
+        }
+
+        if (currentPreviewUrl) {
+          URL.revokeObjectURL(currentPreviewUrl);
+        }
+
+        currentPreviewUrl = URL.createObjectURL(file);
+        originalPreview.src = currentPreviewUrl;
+        originalPreview.classList.remove("hidden");
+        originalPlaceholder.classList.add("hidden");
+        originalMeta.textContent = file.name;
+
+        if (stencilPreview) {
+          stencilPreview.classList.add("hidden");
+        }
+
+        if (stencilPlaceholder) {
+          stencilPlaceholder.textContent = "En attente de transformation";
+          stencilPlaceholder.classList.remove("hidden");
+          stencilPlaceholder.classList.add("flex");
+        }
+      });
+    </script>
   </body>
 </html>
