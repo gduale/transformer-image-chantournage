@@ -1,2 +1,4 @@
-# No runtime dependencies are required for the specification-only state.
-# Add Django, Tailwind integration, Pillow, OpenCV, and related packages when implementation starts.
+asgiref==3.11.1
+django==6.0.6
+pillow==12.2.0
+sqlparse==0.5.5

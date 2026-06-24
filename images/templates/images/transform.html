@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Transform Image</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="min-h-screen bg-zinc-100 text-zinc-950">
+    <main class="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-5 px-4 py-4 sm:px-6 lg:px-8">
+      <header class="flex flex-col gap-3 border-b border-zinc-300 pb-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p class="text-sm font-medium uppercase tracking-wide text-emerald-700">Stencil noir et blanc</p>
+          <h1 class="mt-1 text-3xl font-semibold tracking-normal text-zinc-950">Transform Image</h1>
+        </div>
+        {% if result %}
+          <a
+            href="{{ result.stencil_data_url }}"
+            download="stencil-result.png"
+            class="inline-flex h-11 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"
+          >
+            Télécharger
+          </a>
+        {% endif %}
+      </header>
+
+      <form method="post" enctype="multipart/form-data" class="grid flex-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+        {% csrf_token %}
+        <input type="hidden" name="source_data" value="{{ source_data }}">
+
+        <section class="grid min-h-[420px] gap-4 md:grid-cols-2">
+          <div class="flex min-h-[320px] flex-col overflow-hidden rounded-md border border-zinc-300 bg-white">
+            <div class="flex h-12 items-center justify-between border-b border-zinc-200 px-4">
+              <h2 class="text-sm font-semibold text-zinc-800">Original</h2>
+              {% if result %}
+                <span class="text-xs text-zinc-500">{{ result.width }} x {{ result.height }}</span>
+              {% endif %}
+            </div>
+            <div class="flex flex-1 items-center justify-center bg-zinc-50 p-3">
+              {% if result %}
+                <img src="{{ result.original_data_url }}" alt="Image originale" class="max-h-[70vh] w-full object-contain">
+              {% else %}
+                <div class="w-full max-w-sm">
+                  <label for="{{ form.image.id_for_label }}" class="flex aspect-[4/3] cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-zinc-300 bg-white p-6 text-center hover:border-emerald-600">
+                    <span class="text-base font-semibold text-zinc-900">Ajouter une image</span>
+                    <span class="mt-2 text-sm text-zinc-500">JPEG, PNG ou WebP</span>
+                  </label>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="flex min-h-[320px] flex-col overflow-hidden rounded-md border border-zinc-300 bg-white">
+            <div class="flex h-12 items-center justify-between border-b border-zinc-200 px-4">
+              <h2 class="text-sm font-semibold text-zinc-800">Résultat</h2>
+              <span class="text-xs text-zinc-500">PNG</span>
+            </div>
+            <div class="flex flex-1 items-center justify-center bg-white p-3">
+              {% if result %}
+                <img src="{{ result.stencil_data_url }}" alt="Rendu stencil" class="max-h-[70vh] w-full object-contain [image-rendering:auto]">
+              {% else %}
+                <div class="flex aspect-[4/3] w-full max-w-sm items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 text-sm font-medium text-zinc-500">
+                  En attente
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </section>
+
+        <aside class="flex flex-col gap-4 rounded-md border border-zinc-300 bg-white p-4">
+          <div>
+            <label for="{{ form.image.id_for_label }}" class="mb-2 block text-sm font-semibold text-zinc-800">Image</label>
+            <input
+              id="{{ form.image.id_for_label }}"
+              type="file"
+              name="{{ form.image.html_name }}"
+              accept="image/jpeg,image/png,image/webp"
+              class="block w-full rounded-md border border-zinc-300 bg-white text-sm file:mr-4 file:border-0 file:bg-zinc-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-zinc-800"
+            >
+            {% for error in form.image.errors %}
+              <p class="mt-2 text-sm font-medium text-red-700">{{ error }}</p>
+            {% endfor %}
+          </div>
+
+          <div class="grid gap-4">
+            <label class="block">
+              <span class="flex justify-between text-sm font-semibold text-zinc-800">
+                Luminosité
+                <span>{{ form.brightness.value|default:0 }}</span>
+              </span>
+              <input type="range" name="brightness" min="-100" max="100" value="{{ form.brightness.value|default:0 }}" class="mt-2 w-full accent-emerald-700">
+            </label>
+
+            <label class="block">
+              <span class="flex justify-between text-sm font-semibold text-zinc-800">
+                Contraste
+                <span>{{ form.contrast.value|default:25 }}</span>
+              </span>
+              <input type="range" name="contrast" min="-100" max="100" value="{{ form.contrast.value|default:25 }}" class="mt-2 w-full accent-emerald-700">
+            </label>
+
+            <label class="block">
+              <span class="flex justify-between text-sm font-semibold text-zinc-800">
+                Seuil
+                <span>{{ form.threshold.value|default:130 }}</span>
+              </span>
+              <input type="range" name="threshold" min="0" max="255" value="{{ form.threshold.value|default:130 }}" class="mt-2 w-full accent-emerald-700">
+            </label>
+
+            <label class="block">
+              <span class="flex justify-between text-sm font-semibold text-zinc-800">
+                Détail
+                <span>{{ form.detail.value|default:45 }}</span>
+              </span>
+              <input type="range" name="detail" min="0" max="100" value="{{ form.detail.value|default:45 }}" class="mt-2 w-full accent-emerald-700">
+            </label>
+
+            <label class="block">
+              <span class="flex justify-between text-sm font-semibold text-zinc-800">
+                Nettoyage
+                <span>{{ form.denoise.value|default:20 }}</span>
+              </span>
+              <input type="range" name="denoise" min="0" max="100" value="{{ form.denoise.value|default:20 }}" class="mt-2 w-full accent-emerald-700">
+            </label>
+
+            <label class="flex items-center justify-between gap-3 rounded-md border border-zinc-200 px-3 py-2">
+              <span class="text-sm font-semibold text-zinc-800">Inverser</span>
+              <input type="checkbox" name="invert" value="on" {% if form.invert.value %}checked{% endif %} class="h-5 w-5 rounded border-zinc-300 text-emerald-700 focus:ring-emerald-700">
+            </label>
+          </div>
+
+          {% if form.non_field_errors %}
+            <div class="rounded-md border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+
+          <div class="mt-auto grid gap-2">
+            <button
+              type="submit"
+              class="h-11 rounded-md bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2"
+            >
+              Transformer
+            </button>
+            <a
+              href="{% url 'images:transform' %}"
+              class="inline-flex h-11 items-center justify-center rounded-md border border-zinc-300 px-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-100"
+            >
+              Réinitialiser
+            </a>
+          </div>
+        </aside>
+      </form>
+    </main>
+  </body>
+</html>
