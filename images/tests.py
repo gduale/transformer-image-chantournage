@@ -103,3 +103,71 @@ class TransformImageViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Télécharger")
         self.assertContains(response, "data:image/png;base64")
+
+    def test_post_jpg_image_with_image_jpg_mime_displays_result(self):
+        upload = SimpleUploadedFile(
+            "test.jpg",
+            create_jpeg_test_image(),
+            content_type="image/jpg",
+        )
+
+        response = self.client.post(
+            reverse("images:transform"),
+            {
+                "image": upload,
+                "brightness": 0,
+                "contrast": 25,
+                "threshold": 130,
+                "detail": 45,
+                "denoise": 20,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Télécharger")
+        self.assertContains(response, "data:image/png;base64")
+
+    def test_post_jpg_image_with_generic_mime_displays_result(self):
+        upload = SimpleUploadedFile(
+            "Sans titre.jpg",
+            create_jpeg_test_image(),
+            content_type="application/octet-stream",
+        )
+
+        response = self.client.post(
+            reverse("images:transform"),
+            {
+                "image": upload,
+                "brightness": 0,
+                "contrast": 25,
+                "threshold": 130,
+                "detail": 45,
+                "denoise": 20,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Télécharger")
+        self.assertContains(response, "data:image/png;base64")
+
+    def test_invalid_upload_does_not_show_missing_image_error(self):
+        upload = SimpleUploadedFile(
+            "test.txt",
+            b"not an image",
+            content_type="text/plain",
+        )
+
+        response = self.client.post(
+            reverse("images:transform"),
+            {
+                "image": upload,
+                "brightness": 0,
+                "contrast": 25,
+                "threshold": 130,
+                "detail": 45,
+                "denoise": 20,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Ajoutez une image pour lancer la transformation.")
