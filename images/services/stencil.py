@@ -15,7 +15,7 @@ class StencilSettings:
     contrast: int = 25
     threshold: int = 130
     detail: int = 45
-    denoise: int = 20
+    denoise: int = 50
     invert: bool = False
 
 

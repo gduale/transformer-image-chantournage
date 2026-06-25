@@ -124,9 +124,9 @@
             <label class="block">
               <span class="flex justify-between text-sm font-semibold text-zinc-800">
                 Nettoyage
-                <span id="denoiseValue">{{ form.denoise.value|default:20 }}</span>
+                <span id="denoiseValue">{{ form.denoise.value|default:50 }}</span>
               </span>
-              <input type="range" name="denoise" min="0" max="100" value="{{ form.denoise.value|default:20 }}" data-default-value="20" data-output-target="denoiseValue" class="mt-2 w-full accent-emerald-700" data-parameter-control>
+              <input type="range" name="denoise" min="0" max="100" value="{{ form.denoise.value|default:50 }}" data-default-value="50" data-output-target="denoiseValue" class="mt-2 w-full accent-emerald-700" data-parameter-control>
             </label>
 
             <label class="flex items-center justify-between gap-3 rounded-md border border-zinc-200 px-3 py-2">

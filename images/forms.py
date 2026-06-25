@@ -15,7 +15,7 @@ class StencilForm(forms.Form):
     contrast = forms.IntegerField(min_value=-100, max_value=100, initial=25)
     threshold = forms.IntegerField(min_value=0, max_value=255, initial=130)
     detail = forms.IntegerField(min_value=0, max_value=100, initial=45)
-    denoise = forms.IntegerField(min_value=0, max_value=100, initial=20)
+    denoise = forms.IntegerField(min_value=0, max_value=100, initial=50)
     invert = forms.BooleanField(required=False, initial=False)
 
     def clean_image(self):
