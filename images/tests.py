@@ -56,7 +56,7 @@ class TransformImageViewTests(TestCase):
         response = self.client.get(reverse("images:transform"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Transform Image")
+        self.assertContains(response, "Transformer une image pour du chantournage")
 
     def test_post_valid_image_displays_result(self):
         upload = SimpleUploadedFile(
