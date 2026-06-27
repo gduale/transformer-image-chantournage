@@ -58,6 +58,7 @@ class TransformImageViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Transformer une image pour du chantournage")
+        self.assertContains(response, f'href="{reverse("images:transform")}"')
 
     def test_post_valid_image_displays_result(self):
         upload = SimpleUploadedFile(

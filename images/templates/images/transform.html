@@ -5,12 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Transformer une image pour du chantournage</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @keyframes loadingDot {
+        0%, 80%, 100% {
+          opacity: 0.25;
+          transform: translateY(0);
+        }
+
+        40% {
+          opacity: 1;
+          transform: translateY(-0.15rem);
+        }
+      }
+
+      .loading-dot {
+        animation: loadingDot 1s infinite ease-in-out;
+        display: inline-block;
+      }
+
+      .loading-dot:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+
+      .loading-dot:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+    </style>
   </head>
   <body class="min-h-screen bg-zinc-100 text-zinc-950">
     <main class="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-5 px-4 py-4 sm:px-6 lg:px-8">
       <header class="flex flex-col gap-3 border-b border-zinc-300 pb-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 class="text-3xl font-semibold tracking-normal text-zinc-950">Transformer une image pour du chantournage</h1>
+          <h1 class="text-3xl font-semibold tracking-normal text-zinc-950">
+            <a href="{% url 'images:transform' %}" class="hover:text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">
+              Transformer une image pour du chantournage
+            </a>
+          </h1>
         </div>
         {% if result %}
           <a
@@ -23,9 +53,9 @@
         {% endif %}
       </header>
 
-      <form method="post" enctype="multipart/form-data" class="grid flex-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <form id="transformForm" method="post" enctype="multipart/form-data" class="grid flex-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
         {% csrf_token %}
-        <input type="hidden" name="source_data" value="{{ source_data }}">
+        <input id="sourceData" type="hidden" name="source_data" value="{{ source_data }}">
         <input id="sourceName" type="hidden" name="source_name" value="{{ source_name }}">
         <input
           id="{{ form.image.id_for_label }}"
@@ -144,6 +174,7 @@
 
           <div class="mt-auto grid gap-2">
             <button
+              id="transformButton"
               type="submit"
               class="h-11 rounded-md bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2"
             >
@@ -162,7 +193,10 @@
     </main>
 
     <script>
+      const transformForm = document.getElementById("transformForm");
+      const transformButton = document.getElementById("transformButton");
       const imageInput = document.getElementById("{{ form.image.id_for_label }}");
+      const sourceDataInput = document.getElementById("sourceData");
       const sourceNameInput = document.getElementById("sourceName");
       const originalPreviewTrigger = document.getElementById("originalPreviewTrigger");
       const originalPreview = document.getElementById("originalPreview");
@@ -174,6 +208,36 @@
       const parameterControls = document.querySelectorAll("[data-parameter-control]");
 
       let currentPreviewUrl = null;
+
+      const loadingMarkup = `
+        <span class="inline-flex items-center gap-1">
+          <span>Transformation en cours</span>
+          <span aria-hidden="true">
+            <span class="loading-dot">.</span><span class="loading-dot">.</span><span class="loading-dot">.</span>
+          </span>
+        </span>
+      `;
+
+      const showTransformationLoading = () => {
+        if (!imageInput.files[0] && !sourceDataInput.value) {
+          return;
+        }
+
+        if (stencilPreview) {
+          stencilPreview.classList.add("hidden");
+        }
+
+        if (stencilPlaceholder) {
+          stencilPlaceholder.innerHTML = loadingMarkup;
+          stencilPlaceholder.classList.remove("hidden");
+          stencilPlaceholder.classList.add("flex");
+          stencilPlaceholder.setAttribute("aria-live", "polite");
+        }
+
+        transformButton.disabled = true;
+        transformButton.textContent = "Transformation...";
+        transformButton.classList.add("cursor-wait", "opacity-80");
+      };
 
       const updateControlOutput = (control) => {
         if (control.type === "checkbox") {
@@ -195,6 +259,7 @@
 
       document.addEventListener("input", syncParameterOutput);
       document.addEventListener("change", syncParameterOutput);
+      transformForm.addEventListener("submit", showTransformationLoading);
 
       resetParameters.addEventListener("click", () => {
         parameterControls.forEach((control) => {
