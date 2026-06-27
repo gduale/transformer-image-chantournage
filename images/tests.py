@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 from PIL import Image
 
+from .models import ImageTransformationLog, ImageTransformationStats
 from .services.stencil import (
     StencilSettings,
     data_url_to_bytes,
@@ -80,6 +81,59 @@ class TransformImageViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Télécharger")
         self.assertContains(response, "data:image/png;base64")
+
+    def test_post_valid_image_creates_success_log_and_increments_counter(self):
+        upload = SimpleUploadedFile(
+            "test.png",
+            create_test_image(),
+            content_type="image/png",
+        )
+
+        response = self.client.post(
+            reverse("images:transform"),
+            {
+                "image": upload,
+                "brightness": 0,
+                "contrast": 25,
+                "threshold": 130,
+                "detail": 45,
+                "denoise": 20,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        log = ImageTransformationLog.objects.get()
+        self.assertEqual(log.image_name, "test.png")
+        self.assertEqual(log.status, ImageTransformationLog.Status.SUCCESS)
+        self.assertEqual(log.error_message, "")
+        self.assertEqual(
+            ImageTransformationStats.get_total_successful_transformations(),
+            1,
+        )
+
+    def test_post_processing_error_creates_error_log_without_incrementing_counter(self):
+        response = self.client.post(
+            reverse("images:transform"),
+            {
+                "source_data": "data:image/png;base64,not-valid-base64",
+                "source_name": "broken.png",
+                "brightness": 0,
+                "contrast": 25,
+                "threshold": 130,
+                "detail": 45,
+                "denoise": 20,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        log = ImageTransformationLog.objects.get()
+        self.assertEqual(log.image_name, "broken.png")
+        self.assertEqual(log.status, ImageTransformationLog.Status.ERROR)
+        self.assertEqual(log.error_message, "Impossible de traiter cette image.")
+        self.assertEqual(
+            ImageTransformationStats.get_total_successful_transformations(),
+            0,
+        )
 
     def test_post_jpg_image_displays_result(self):
         upload = SimpleUploadedFile(

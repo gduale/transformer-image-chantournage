@@ -26,6 +26,7 @@
       <form method="post" enctype="multipart/form-data" class="grid flex-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
         {% csrf_token %}
         <input type="hidden" name="source_data" value="{{ source_data }}">
+        <input id="sourceName" type="hidden" name="source_name" value="{{ source_name }}">
         <input
           id="{{ form.image.id_for_label }}"
           type="file"
@@ -162,6 +163,7 @@
 
     <script>
       const imageInput = document.getElementById("{{ form.image.id_for_label }}");
+      const sourceNameInput = document.getElementById("sourceName");
       const originalPreviewTrigger = document.getElementById("originalPreviewTrigger");
       const originalPreview = document.getElementById("originalPreview");
       const originalPlaceholder = document.getElementById("originalPlaceholder");
@@ -216,6 +218,7 @@
         }
 
         currentPreviewUrl = URL.createObjectURL(file);
+        sourceNameInput.value = file.name;
         originalPreview.src = currentPreviewUrl;
         originalPreviewTrigger.classList.remove("hidden");
         originalPlaceholder.classList.add("hidden");

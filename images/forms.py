@@ -11,6 +11,7 @@ ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 class StencilForm(forms.Form):
     image = forms.ImageField(required=False)
     source_data = forms.CharField(required=False, widget=forms.HiddenInput)
+    source_name = forms.CharField(required=False, widget=forms.HiddenInput)
     brightness = forms.IntegerField(min_value=-100, max_value=100, initial=0)
     contrast = forms.IntegerField(min_value=-100, max_value=100, initial=25)
     threshold = forms.IntegerField(min_value=0, max_value=255, initial=130)
